@@ -1,0 +1,17 @@
+# Game8 POST の設定ファイルです。
+# このファイルを game8.conf にコピーして、サーバーに合わせて編集します。
+
+# systemd timer の実行間隔。変えた場合は sudo ./game8.sh restart を実行します。
+GAME8_POST_INTERVAL=8h
+
+# 投稿者名。未指定なら空文字列です。
+GAME8_POST_NAME=
+
+# 投稿本文。複数行を書けます。未指定なら空文字列です。
+GAME8_POST_BODY=$(cat <<'EOF'
+EOF
+)
+
+# 添付するファイルパス。未指定ならファイルなしで投稿します。
+# 相対パスは game8.conf のあるディレクトリからの相対パスとして扱います。
+GAME8_POST_UPLOAD_FILE=
