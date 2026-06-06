@@ -19,7 +19,7 @@ GAME8_POST_INTERVAL="${GAME8_POST_INTERVAL:-8h}"
 GAME8_POST_BASE_URL="https://game8.jp"
 GAME8_POST_ARCHIVE_ID="216448"
 GAME8_POST_PAGE_PATH="/minecraft/216448"
-CURL_USER_AGENT="${CURL_USER_AGENT:-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36}"
+CURL_USER_AGENT="${CURL_USER_AGENT:-Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36}"
 
 usage() {
     cat <<EOF
@@ -79,12 +79,15 @@ systemd_unit_path() {
 game8_post() {
     require_game8_post_deps
 
-    local page_url endpoint csrf_token name body upload_file http_status
+    local page_url endpoint csrf_token name body upload_file http_status cookie_file response_file
     page_url="$GAME8_POST_BASE_URL$GAME8_POST_PAGE_PATH"
     endpoint="$GAME8_POST_BASE_URL/api/archive_comments"
     name="${GAME8_POST_NAME:-}"
     body="${GAME8_POST_BODY:-}"
     upload_file="${GAME8_POST_UPLOAD_FILE:-}"
+    cookie_file="$(mktemp)"
+    response_file="$(mktemp)"
+    trap 'rm -f "$cookie_file" "$response_file"' RETURN
 
     if [[ -n "$upload_file" && "$upload_file" != /* ]]; then
         upload_file="$CONFIG_DIR/$upload_file"
@@ -107,6 +110,7 @@ game8_post() {
             --show-error \
             --location \
             --compressed \
+            --cookie-jar "$cookie_file" \
             --user-agent "$CURL_USER_AGENT" \
             --header "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8" \
             --header "Accept-Language: ja,en-US;q=0.9,en;q=0.8" \
@@ -127,15 +131,15 @@ game8_post() {
         --show-error
         --location
         --compressed
-        --output /dev/null
+        --cookie "$cookie_file"
+        --cookie-jar "$cookie_file"
+        --output "$response_file"
         --write-out '%{http_code}'
         --user-agent "$CURL_USER_AGENT"
         --referer "$page_url"
-        --header "Accept: application/json, text/javascript, */*; q=0.01"
+        --header "Accept: application/json"
         --header "Accept-Language: ja,en-US;q=0.9,en;q=0.8"
-        --header "Origin: $GAME8_POST_BASE_URL"
         --header "X-CSRF-Token: $csrf_token"
-        --header "X-Requested-With: XMLHttpRequest"
         --form "archive_comment[archive_id]=$GAME8_POST_ARCHIVE_ID"
         --form "archive_comment[name]=$name"
         --form "archive_comment[body]=$body"
@@ -162,6 +166,11 @@ game8_post() {
                 echo "Game8 POST に失敗しました: HTTP $http_status archive_id=$GAME8_POST_ARCHIVE_ID name=$name upload_file=$upload_file" >&2
             else
                 echo "Game8 POST に失敗しました: HTTP $http_status archive_id=$GAME8_POST_ARCHIVE_ID name=$name" >&2
+            fi
+            if [[ -s "$response_file" ]]; then
+                echo "Response body:" >&2
+                cat "$response_file" >&2
+                echo >&2
             fi
             exit 1
             ;;
