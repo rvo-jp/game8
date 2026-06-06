@@ -18,6 +18,7 @@ fi
 GAME8_POST_INTERVAL="${GAME8_POST_INTERVAL:-8h}"
 GAME8_POST_BASE_URL="https://game8.jp"
 GAME8_POST_ARCHIVE_ID="216448"
+GAME8_POST_PAGE_PATH="/minecraft/216448"
 CURL_USER_AGENT="${CURL_USER_AGENT:-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36}"
 
 usage() {
@@ -79,7 +80,7 @@ game8_post() {
     require_game8_post_deps
 
     local page_url endpoint csrf_token name body upload_file http_status
-    page_url="$GAME8_POST_BASE_URL/$GAME8_POST_ARCHIVE_ID"
+    page_url="$GAME8_POST_BASE_URL$GAME8_POST_PAGE_PATH"
     endpoint="$GAME8_POST_BASE_URL/api/archive_comments"
     name="${GAME8_POST_NAME:-}"
     body="${GAME8_POST_BODY:-}"

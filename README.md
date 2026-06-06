@@ -51,7 +51,7 @@ GAME8_POST_UPLOAD_FILE=
 GAME8_POST_UPLOAD_FILE=./upload.png
 ```
 
-投稿先は `https://game8.jp/216448` と `/api/archive_comments` で固定しています。通常の設定項目からは変更できないため、誤設定で投稿先が変わることはありません。
+CSRF取得元ページは `https://game8.jp/minecraft/216448`、投稿先APIは `https://game8.jp/api/archive_comments` で固定しています。通常の設定項目からは変更できないため、誤設定で投稿先が変わることはありません。
 
 ## 起動
 
